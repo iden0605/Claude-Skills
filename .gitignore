@@ -13,5 +13,8 @@ Thumbs.db
 *.swp
 *.swo
 
+# Claude
+.claude/
+
 # Misc
 *.log
