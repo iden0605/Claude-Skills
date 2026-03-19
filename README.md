@@ -9,7 +9,7 @@ From the root of any project, run:
 ### Install all skills
 
 ```bash
-bash <(git archive --remote=git@github.com:iden0605/claude-skills.git main install.sh | tar -xO)
+bash <(curl -s https://raw.githubusercontent.com/iden0605/claude-skills/main/install.sh)
 ```
 
 ### Install specific skills
@@ -17,7 +17,7 @@ bash <(git archive --remote=git@github.com:iden0605/claude-skills.git main insta
 Pass skill names as arguments (folder names, no extension):
 
 ```bash
-bash <(git archive --remote=git@github.com:iden0605/claude-skills.git main install.sh | tar -xO) grill-me excalidraw-diagram
+bash <(curl -s https://raw.githubusercontent.com/iden0605/claude-skills/main/install.sh) grill-me excalidraw-diagram
 ```
 
 ### What gets installed
