@@ -48,6 +48,7 @@ your-project/
 | grill-me | `/grill-me` | Interview the user relentlessly about a plan or design, resolving each branch of the decision tree until reaching shared understanding |
 | improve-codebase-architecture | `/improve-codebase-architecture` | Explore a codebase for architectural friction, propose module-deepening refactors, and create GitHub issue RFCs |
 | skill-builder | `/skill-builder` | Build new skills or audit existing ones following Claude Code best practices, with a guided discovery interview |
+| ui-review | `/ui-review [scope]` | Analyze frontend UI/UX, discuss improvements with the user, then orchestrate parallel design subagents to apply cohesive changes across all components/pages |
 
 ## Adding a new skill
 
@@ -97,6 +98,8 @@ claude-skills/
 ├── skill-builder/
 │   ├── SKILL.md
 │   └── reference.md
+├── ui-review/
+│   └── SKILL.md
 ├── install.sh       # Installer script
 ├── LICENSE          # MIT
 └── README.md
