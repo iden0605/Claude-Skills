@@ -219,11 +219,37 @@ Show the full JSON to the user and confirm before writing anything.
 
 ---
 
-## Step 7: Determine Detail Page Type & Build the Component
+## Step 7: Build the Detail Component
 
-**If NO `details` key → Simple detail page:**
+### Portfolio Design System
 
-Create `{portfolio-path}/src/Components/Projects/{ProjectName}Detail.jsx`:
+All detail pages share these CSS variables (defined in `App.css`):
+```css
+--primary-color: #1a1a1a       /* dark background / body text */
+--secondary-color: #f5f5f5     /* light surfaces */
+--subtle-accent: #6a7fda       /* muted blue-purple — used for borders, accents */
+--accent-color: #007bff        /* blue */
+--highlight-color: #00b894     /* green */
+```
+
+Available CSS classes from `ProjectDetails.css` — use these, do not invent new ones:
+- `project-detail-container` — outer wrapper, full width
+- `project-header-content` — inner content column inside a section
+- `image-description-section` — wraps all detail blocks
+- `image-description-block` — one section's content block
+- `subtitle` — applied to `<span>` inside `<h3>` for section titles
+- `section-divider-subtle` — horizontal rule between blocks
+- `desc-image project-detail-image-wrapper` — wrapper for clickable images (`cursor: zoom-in`)
+- `description` — text paragraph block
+- `video-container` — wrapper for `<video>` elements
+
+Global layout classes from `App.css`:
+- `main-content` — page root, handles navbar offset and padding
+- `section` — standard page section with vertical padding; pair with `data-aos="fade-up"`
+
+---
+
+### Simple Detail Page (no `details` key)
 
 ```jsx
 import React, { useState } from 'react';
@@ -272,32 +298,124 @@ function {ProjectName}Detail() {
 export default {ProjectName}Detail;
 ```
 
-**If YES `details` key → Rich detail page:**
+---
 
-Invoke the `/frontend-design` skill with this prompt:
+### Rich Detail Page (`details` key present)
 
-> "Build a React detail page component for a portfolio project called '{ProjectName}'. Component path: `src/Components/Projects/{ProjectName}Detail.jsx`.
->
-> **Requirements:**
-> - Import `projectData` from `'../../Data/projectData'`, access as `projectData["{ProjectName}"]`
-> - Import and render `<ProjectHeader projectName="{ProjectName}" />` at the top (from `'./ProjectHeader'`)
-> - Import `'./ProjectDetails.css'` and `ImageModal` from `'../Global/ImageModal'`
-> - Manage `modalOpen` and `selectedImage` state for clickable images
-> - Iterate over `project.details` (`{ title, content[] }[]`) — wrap each in `<section className='section' data-aos='fade-up'>` with an `<h2>` heading
-> - `renderContentBlock(item, index)` switch on `item.type`:
->   - `'image'` → `<img style={{ width: item.width }}>`, click opens ImageModal
->   - `'text'` → `<p>{item.text}</p>`
->   - `'video'` → `<video autoPlay loop muted playsInline style={{ width: item.width }}>`
->   - `'troop-carousel'` → `<TroopCarousel items={item.items} />` (import from `'./TroopCarousel'`)
-> - Dark, minimal aesthetic matching the rest of the portfolio
->
-> **Section layout notes:**
-> {paste the section design from Step 4}
->
-> **Full project JSON:**
-> {paste full JSON}"
+Write the component directly — do not delegate to any other skill. Follow this exact structure, which all existing rich detail pages use:
 
-Write the returned component to `{portfolio-path}/src/Components/Projects/{ProjectName}Detail.jsx`.
+```jsx
+import React, { useState } from 'react';
+import projectData from '../../Data/projectData';
+import ProjectHeader from './ProjectHeader';
+import './ProjectDetails.css';
+import ImageModal from '../Global/ImageModal';
+// only import TroopCarousel if details contains a 'troop-carousel' block:
+import TroopCarousel from './TroopCarousel';
+
+function {ProjectName}Detail() {
+  const project = projectData["{ProjectName}"];
+
+  if (!project) {
+    return <div>Project not found.</div>;
+  }
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
+
+  const handleImageClick = (imageSrc) => {
+    setSelectedImage(imageSrc);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedImage('');
+  };
+
+  const renderContentBlock = (item, key) => {
+    switch (item.type) {
+      case 'image':
+        return (
+          <div className="desc-image project-detail-image-wrapper" key={key}>
+            <img
+              src={item.src}
+              alt="{ProjectName} description"
+              style={{ width: item.width || '100%' }}
+              onClick={() => handleImageClick(item.src)}
+            />
+          </div>
+        );
+      case 'text':
+        return (
+          <div className="description" style={{ textAlign: 'left' }} key={key}>
+            <p>{item.text}</p>
+          </div>
+        );
+      case 'video':
+        return (
+          <div className="video-container" key={key} style={{ maxWidth: item.width || '900px', margin: '0 auto 1rem' }}>
+            <video
+              src={item.src}
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ width: '100%', borderRadius: '8px' }}
+            />
+          </div>
+        );
+      case 'troop-carousel':
+        return <TroopCarousel key={key} items={item.items} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <main className="main-content">
+      <div className="project-detail-container">
+        <ProjectHeader projectName="{ProjectName}" />
+        <section className="section" data-aos="fade-up">
+          <div className="project-header-content">
+            <div className="image-description-section">
+              {project.details?.map((detailBlock, blockIndex) => (
+                <div className="image-description-block" key={blockIndex}>
+                  <div style={{ textAlign: 'left', alignSelf: 'flex-start', marginTop: '-20px' }}>
+                    <h3><span className="subtitle">{detailBlock.title}</span></h3>
+                  </div>
+                  {detailBlock.content.map((item, itemIndex) =>
+                    renderContentBlock(item, `${blockIndex}-${itemIndex}`)
+                  )}
+                  {blockIndex < project.details.length - 1 && (
+                    <div className="section-divider-subtle"></div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {modalOpen && (
+        <ImageModal
+          src={selectedImage}
+          alt={`Expanded image for {ProjectName}`}
+          onClose={closeModal}
+        />
+      )}
+    </main>
+  );
+}
+
+export default {ProjectName}Detail;
+```
+
+**Rules:**
+- Only import `TroopCarousel` if the `details` data actually contains a `troop-carousel` block.
+- Do not add new CSS classes or inline styles beyond what is shown above.
+- Do not change the class names — they are tied to `ProjectDetails.css` and global styles.
+- The `{item.text}` in the `text` case renders JSX — if the text contains special characters, ensure it is safe to render as a child.
 
 ---
 
