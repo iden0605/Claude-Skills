@@ -120,21 +120,33 @@ Use this when drafting `description` and all `details[].content[].text` values.
 
 ## Step 4: Design the `details` Sections
 
-Based on what you found in the codebase, propose a `details` array. Think about:
-- What are the most technically interesting or visually impressive systems?
-- What can be shown visually — screenshots, GIFs, video recordings?
-- What warrants a written explanation of *how* it works?
+**First, ask the user what they want to showcase:**
 
-**By project type:**
+> "What parts of this project do you most want to highlight on the page? For example:
+> - A specific feature, mechanic, or system you're proud of
+> - Something visually impressive you can screenshot or record
+> - A technical decision or architecture worth explaining
+> - Any content you already have assets for (screenshots, GIFs, recordings)
+>
+> You can be as vague or specific as you like — I'll use this to shape the page."
+
+Wait for their answer. Use it as the primary input for what sections to include. Do not skip this — even a brief answer ("show the combat system and the UI") directly shapes which sections get priority and what screenshots/recordings to suggest.
+
+**Then propose sections**, combining what the user said with what you found in the codebase:
+- Lead with what the user explicitly wants to showcase
+- Fill remaining sections with the most technically interesting or visually impressive things from the code
+- Consider: What can be shown visually — screenshots, GIFs, video recordings? What warrants a written explanation of *how* it works?
+
+**By project type (use as a secondary guide, user input takes priority):**
 - **Games:** gameplay mechanics, unique systems, VFX, AI behaviour, architecture
 - **Web apps:** UI flow, architecture decisions, AI/API integrations, data pipelines
 - **Data/ML:** visualisations, model comparisons, data pipeline, results
 
-Present proposed sections clearly and ask for confirmation:
+Present proposed sections clearly:
 
-> "Here are the **detail sections** I'd suggest for the project page:
+> "Based on what you want to highlight and what I found in the codebase, here are the **detail sections** I'd suggest:
 >
-> **Section 1: [Title]**
+> **Section 1: [Title]** ← [note if this comes from user's input]
 > - `image` — [what to screenshot, e.g. 'full gameplay screenshot showing the map and troop UI']
 > - `text` — [draft paragraph in portfolio style]
 >
