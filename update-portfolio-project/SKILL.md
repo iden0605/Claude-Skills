@@ -158,6 +158,8 @@ Present proposed sections clearly:
 >
 > Does this structure work? Add, remove, or modify freely."
 
+Each section becomes a **tab** in the terminal-style detail page. Tabs display as filenames (e.g. `introduction-cutscene.txt`, `spell-composition-system.txt`). Keep tab names short and descriptive.
+
 If the project is simple with nothing visually interesting to show (e.g. a small script or data analysis), suggest skipping the `details` array entirely — a simple header-only page is fine.
 
 ---
@@ -197,8 +199,8 @@ Once you have all of these, ping me and I'll write all the portfolio files in on
 ```
 
 **Rules:**
-- Numbered section GIFs (`-1.gif`, `-2.gif`, etc.) increment across all non-carousel sections in order. Skip numbers that belong to carousel sections (carousels use named files, not numbered ones).
-- For carousel sections (spells, enemies, tilesets, troops, cards, etc.), show the `{Category}/pngs/` and `{Category}/gifs/` pattern with concrete example names based on what the user described.
+- Numbered section GIFs (`-1.gif`, `-2.gif`, etc.) increment across all non-carousel sections in order.
+- For carousel sections, show the `{Category}/pngs/` and `{Category}/gifs/` (or `mp4s/`) pattern with concrete example names.
 - For `image` type sections use `.png`, for `video` type use `.mp4`, for `gif` type use `.gif`.
 - The hover preview video always lives at `public/{tokenizedname}-hover.mp4` (root of `public/`, no subfolder).
 - The card thumbnail always lives at `public/assets/project/{ProjectName}/{tokenizedname}-image-1.png`.
@@ -251,189 +253,53 @@ Show the full JSON to the user and confirm before writing anything.
 
 ## Step 7: Build the Detail Component
 
-### Portfolio Design System
+### Portfolio Design System — Catppuccin Macchiato Terminal Theme
 
-All detail pages share these CSS variables (defined in `App.css`):
-```css
---primary-color: #1a1a1a       /* dark background / body text */
---secondary-color: #f5f5f5     /* light surfaces */
---subtle-accent: #6a7fda       /* muted blue-purple — used for borders, accents */
---accent-color: #007bff        /* blue */
---highlight-color: #00b894     /* green */
-```
+The portfolio uses a dark Catppuccin Macchiato terminal aesthetic. All project detail pages follow a consistent pattern using two reusable components:
 
-Available CSS classes from `ProjectDetails.css` — use these, do not invent new ones:
-- `project-detail-container` — outer wrapper, full width
-- `project-header-content` — inner content column inside a section
-- `image-description-section` — wraps all detail blocks
-- `image-description-block` — one section's content block
-- `subtitle` — applied to `<span>` inside `<h3>` for section titles
-- `section-divider-subtle` — horizontal rule between blocks
-- `desc-image project-detail-image-wrapper` — wrapper for clickable images (`cursor: zoom-in`)
-- `description` — text paragraph block
-- `video-container` — wrapper for `<video>` elements
+- **`ProjectHeader`** — renders a terminal with tabs for `overview.md` and `responsibilities.txt`. Titlebar shows `~/projects/{slug} $ ls`. Contains: YouTube embed (if applicable), project title, type badge, external links (GitHub/Itch.io/Website), description, and metadata (status, project_time, technologies). All driven from `projectData.js`.
 
-Global layout classes from `App.css`:
-- `main-content` — page root, handles navbar offset and padding
-- `section` — standard page section with vertical padding; pair with `data-aos="fade-up"`
+- **`ProjectDetailTabSection`** — renders a second terminal below ProjectHeader with tabs for each entry in the `details` array. Titlebar shows `~/projects/{slug} $ ls`. Each tab displays its content blocks (images, text, videos, troop-carousels). Handles: CRT glitch animation on tab switch, height transitions, scroll arrows for overflow tabs, clickable images with ImageModal, and typing animation on the command prompt.
+
+**Terminal styling features (handled automatically by these components):**
+- Titlebar: dark mantle background (`#1e2030`), path text left-aligned in `#cad3f5`
+- Tab bar: blue tab text (`#8aadf4`), active tab has white text + blue underline
+- Prompt: green `❯` arrow + green command text with typing animation and blinking `▌` cursor
+- CRT glitch animation on tab switch
+- Smooth height transition via ResizeObserver
+
+**Key colours (Catppuccin Macchiato):**
+- Base: `#24273a` (terminal screen background)
+- Mantle: `#1e2030` (titlebar, tab bar background)
+- Green: `#a6da95` (commands, prompts, directory names)
+- Blue: `#8aadf4` (links, tabs, hostnames, skills)
+- Pink/Red: `#ed8796` (roles, job titles, meta keys, highlights)
+- Text: `#eef0fc` (bright), `#cad3f5` (normal), `#a5adcb` (muted)
 
 ---
 
-### Simple Detail Page (no `details` key)
+### Detail Component Pattern (all projects use this)
+
+Every project detail page follows this exact pattern — simple or rich:
 
 ```jsx
-import React, { useState } from 'react';
 import projectData from '../../Data/projectData';
 import ProjectHeader from './ProjectHeader';
+import ProjectDetailTabSection from './ProjectDetailTabSection';
 import './ProjectDetails.css';
-import ImageModal from '../Global/ImageModal';
 
 function {ProjectName}Detail() {
-  const project = projectData["{ProjectName}"];
-
-  if (!project) {
-    return <div>Project not found.</div>;
-  }
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState('');
-
-  const handleImageClick = (imageSrc) => {
-    setSelectedImage(imageSrc);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setSelectedImage('');
-  };
+  const project = projectData["{Project Name}"];
+  if (!project) return <div>Project not found.</div>;
 
   return (
     <main className="main-content">
       <div className="project-detail-container">
-        <ProjectHeader projectName="{ProjectName}" />
+        <ProjectHeader projectName="{Project Name}" />
+        {project.details && (
+          <ProjectDetailTabSection details={project.details} projectName="{Project Name}" />
+        )}
       </div>
-
-      {modalOpen && (
-        <ImageModal
-          src={selectedImage}
-          alt={`Expanded image for {ProjectName}`}
-          onClose={closeModal}
-        />
-      )}
-    </main>
-  );
-}
-
-export default {ProjectName}Detail;
-```
-
----
-
-### Rich Detail Page (`details` key present)
-
-Write the component directly — do not delegate to any other skill. Follow this exact structure, which all existing rich detail pages use:
-
-```jsx
-import React, { useState } from 'react';
-import projectData from '../../Data/projectData';
-import ProjectHeader from './ProjectHeader';
-import './ProjectDetails.css';
-import ImageModal from '../Global/ImageModal';
-// only import TroopCarousel if details contains a 'troop-carousel' block:
-import TroopCarousel from './TroopCarousel';
-
-function {ProjectName}Detail() {
-  const project = projectData["{ProjectName}"];
-
-  if (!project) {
-    return <div>Project not found.</div>;
-  }
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState('');
-
-  const handleImageClick = (imageSrc) => {
-    setSelectedImage(imageSrc);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setSelectedImage('');
-  };
-
-  const renderContentBlock = (item, key) => {
-    switch (item.type) {
-      case 'image':
-        return (
-          <div className="desc-image project-detail-image-wrapper" key={key}>
-            <img
-              src={item.src}
-              alt="{ProjectName} description"
-              style={{ width: item.width || '100%' }}
-              onClick={() => handleImageClick(item.src)}
-            />
-          </div>
-        );
-      case 'text':
-        return (
-          <div className="description" style={{ textAlign: 'left' }} key={key}>
-            <p>{item.text}</p>
-          </div>
-        );
-      case 'video':
-        return (
-          <div className="video-container" key={key} style={{ maxWidth: item.width || '900px', margin: '0 auto 1rem' }}>
-            <video
-              src={item.src}
-              autoPlay
-              loop
-              muted
-              playsInline
-              style={{ width: '100%', borderRadius: '8px' }}
-            />
-          </div>
-        );
-      case 'troop-carousel':
-        return <TroopCarousel key={key} items={item.items} />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <main className="main-content">
-      <div className="project-detail-container">
-        <ProjectHeader projectName="{ProjectName}" />
-        <section className="section" data-aos="fade-up">
-          <div className="project-header-content">
-            <div className="image-description-section">
-              {project.details?.map((detailBlock, blockIndex) => (
-                <div className="image-description-block" key={blockIndex}>
-                  <div style={{ textAlign: 'left', alignSelf: 'flex-start', marginTop: '-20px' }}>
-                    <h3><span className="subtitle">{detailBlock.title}</span></h3>
-                  </div>
-                  {detailBlock.content.map((item, itemIndex) =>
-                    renderContentBlock(item, `${blockIndex}-${itemIndex}`)
-                  )}
-                  {blockIndex < project.details.length - 1 && (
-                    <div className="section-divider-subtle"></div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {modalOpen && (
-        <ImageModal
-          src={selectedImage}
-          alt={`Expanded image for {ProjectName}`}
-          onClose={closeModal}
-        />
-      )}
     </main>
   );
 }
@@ -442,10 +308,33 @@ export default {ProjectName}Detail;
 ```
 
 **Rules:**
-- Only import `TroopCarousel` if the `details` data actually contains a `troop-carousel` block.
-- Do not add new CSS classes or inline styles beyond what is shown above.
-- Do not change the class names — they are tied to `ProjectDetails.css` and global styles.
-- The `{item.text}` in the `text` case renders JSX — if the text contains special characters, ensure it is safe to render as a child.
+- The `projectName` prop must exactly match the key in `projectData.js`.
+- `ProjectDetailTabSection` only renders if `details` exists — safe to always include the conditional.
+- Do NOT write raw HTML sections, image blocks, or custom layouts. All content goes through `projectData.js` → `ProjectDetailTabSection`.
+- Do NOT import `ImageModal`, `TroopCarousel`, or `useState` in the detail component — `ProjectDetailTabSection` handles all of that internally.
+- Do NOT add new CSS classes. The existing `ProjectDetails.css` styles everything.
+- Only import `TroopCarousel` if you're adding a new content type to `ProjectDetailTabSection` itself (you shouldn't need to).
+
+### Content Types in `details`
+
+Each entry in the `details` array becomes a tab. The `content` array supports these block types:
+
+```js
+{ type: "image", src: "/assets/project/...", width: "900px" }
+// Clickable image that opens ImageModal. Centered on desktop, constrained to 100% on mobile.
+
+{ type: "text", text: "Paragraph of descriptive text." }
+// Rendered as a styled paragraph with left border accent.
+
+{ type: "video", src: "/assets/project/...", width: "900px" }
+// Auto-playing muted looping video.
+
+{ type: "troop-carousel", items: [
+  { name: "Item Name", sprite: "/path/sprite.png", gif: "/path/anim.mp4", attackName: "Attack", description: "..." },
+  // ... more items
+]}
+// Interactive carousel with sprite selector, GIF/video panel, and description. Pre-renders all media to avoid flash on switch.
+```
 
 ---
 
@@ -457,7 +346,7 @@ Now make all three changes to the portfolio repo:
 Insert the new entry inside the `projectData` object. Preserve all existing entries.
 
 **2. Create `{portfolio-path}/src/Components/Projects/{ProjectName}Detail.jsx`**
-Write the component from Step 7.
+Write the component from Step 7. It should be ~20 lines — no more.
 
 **3. Update `{portfolio-path}/src/App.jsx`**
 Add the import with other project detail imports:
@@ -474,13 +363,15 @@ Add the route inside `<Routes>` with other project routes:
 ## Step 9: Confirm
 
 ```
-✓ Added "{ProjectName}" to {portfolio-path}/src/Data/projectData.js
-✓ Created {portfolio-path}/src/Components/Projects/{ProjectName}Detail.jsx
-✓ Registered route /projects/{tokenizedName} in {portfolio-path}/src/App.jsx
+Done. Added "{Project Name}" to the portfolio:
 
-Assets to add:
-- public/assets/project/{ProjectName}/ — images and videos per the naming convention
-- public/{tokenizedname}-hover.mp4 — card hover preview video
+  src/Data/projectData.js              — project entry with {N} detail sections
+  src/Components/Projects/{ProjectName}Detail.jsx  — detail component
+  src/App.jsx                          — route /projects/{tokenizedName}
+
+Assets still needed:
+  public/{tokenizedname}-hover.mp4     — card hover preview
+  public/assets/project/{ProjectName}/ — images, videos, sprites per checklist
 ```
 
 ---
@@ -495,3 +386,5 @@ Before writing any files:
 - [ ] Empty links use `""` — the key is always present
 - [ ] `previewVid` points to `/{tokenizedname}-hover.mp4` (root of `public/`, no subfolder)
 - [ ] Required fields present: `tokenizedName`, `description`, `type`, `role`, `status`, `projectTime`
+- [ ] Detail component uses the clean `ProjectHeader` + `ProjectDetailTabSection` pattern only — no raw HTML sections
+- [ ] `projectName` prop exactly matches the `projectData.js` key string
