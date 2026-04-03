@@ -162,30 +162,48 @@ If the project is simple with nothing visually interesting to show (e.g. a small
 
 ---
 
-## Step 5: Ask About Images & Media
+## Step 5: Output the Asset Checklist
 
-Ask:
-> "What **assets** will you capture for this project? I'll assign paths following the naming convention.
->
-> Files go under `public/assets/project/{ProjectName}/` in the portfolio repo.
->
-> For each section above, here's what to capture:
-> - Section 1: [specific screenshot description] → save as `{tokenizedname}-image-1.png`
-> - Section 2: [specific recording description] → save as `{tokenizedname}-video-1.mp4`
-> - etc.
->
-> Do you want to provide your own filenames, or use these placeholders?"
+After the sections are confirmed, generate and display the full asset manifest the user needs to capture. Do not ask — tell them exactly what to capture and where to save it.
 
-**Naming convention (apply to all unspecified files):**
-- Thumbnail: `/assets/project/{ProjectName}/{tokenizedname}-image-1.png`
-- Additional images: `{tokenizedname}-image-2.png`, `-3.png`, etc.
-- Videos in sections: `{tokenizedname}-video-1.mp4`, etc.
-- GIFs: `{tokenizedname}-1.gif`, etc.
-- Carousel sprites: `/assets/project/{ProjectName}/{category}/pngs/{name}.png`
-- Carousel GIFs: `/assets/project/{ProjectName}/{category}/gifs/{name}.gif`
-- Preview video (card hover): `/{tokenizedname}-hover.mp4` — this lives at the **root** of `public/`, not in a subfolder
+Use this format, grouped by section. Only include groups that apply to the confirmed sections:
 
-If the user provides filenames, use those exactly. Apply the convention only to unspecified files.
+```
+Here's every file you need to capture, organised by section:
+
+---
+Card assets (root-level)
+public/{tokenizedname}-hover.mp4
+public/assets/project/{ProjectName}/{tokenizedname}-image-1.png
+
+---
+Section 1 — {Section 1 Title}
+public/assets/project/{ProjectName}/{tokenizedname}-1.gif   ← or .png / .mp4 depending on type
+
+---
+Section 2 — {Section 2 Title}
+public/assets/project/{ProjectName}/{tokenizedname}-2.gif
+
+--- (repeat for each numbered section)
+
+---
+Section N — {Carousel Section Title}  (one entry per item you showcase)
+public/assets/project/{ProjectName}/{Category}/pngs/{item-name}.png   ← sprite / icon
+public/assets/project/{ProjectName}/{Category}/gifs/{item-name}.gif   ← behaviour GIF
+e.g. {example-item-1}.png, {example-item-1}.gif, {example-item-2}.png, {example-item-2}.gif, etc.
+
+---
+Once you have all of these, ping me and I'll write all the portfolio files in one go.
+```
+
+**Rules:**
+- Numbered section GIFs (`-1.gif`, `-2.gif`, etc.) increment across all non-carousel sections in order. Skip numbers that belong to carousel sections (carousels use named files, not numbered ones).
+- For carousel sections (spells, enemies, tilesets, troops, cards, etc.), show the `{Category}/pngs/` and `{Category}/gifs/` pattern with concrete example names based on what the user described.
+- For `image` type sections use `.png`, for `video` type use `.mp4`, for `gif` type use `.gif`.
+- The hover preview video always lives at `public/{tokenizedname}-hover.mp4` (root of `public/`, no subfolder).
+- The card thumbnail always lives at `public/assets/project/{ProjectName}/{tokenizedname}-image-1.png`.
+
+Wait for the user to confirm they have the assets before proceeding to Step 6.
 
 ---
 
